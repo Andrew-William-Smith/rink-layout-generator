@@ -38,7 +38,7 @@ function renderRink() {
       // Add title
       var text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       text.innerHTML = currentClass.name;
-      Object.assign(text.style, {'font-family': 'sans-serif', 'font-size': '15px', 'font-weight': '600'});
+      text.style = 'font-family: sans-serif; font-size: 15px; font-weight: 600';
       // Hack to get text size before display
       var textTemp = $(text).appendTo($('svg'));
       var textBox = textTemp[0].getBBox();
