@@ -115,4 +115,16 @@ $(document).ready(function() {
       $(this).attr('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent($('.col-md-3').html()));
       $(this).click();
   });
+
+  // Allow layout clearing
+  $('#clearLayout').click(function() {
+    classes = [{'name': '', 'students': NaN, 'factor': 1.5}];
+
+    // Clean first row
+    $('tr').slice(2).remove();
+    $('.className').val('');
+    $('.studentNumber').val('');
+    $('.studentFactor').val('1.5');
+    renderRink();
+  });
 });
