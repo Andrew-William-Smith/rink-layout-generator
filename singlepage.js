@@ -3,6 +3,6 @@ $(document).ready(function() {
 
     $('input[type=file]').change(function(evt) {
         $('#' + $(this).attr('target')).attr('src',
-                                             URL.createObjectURL(event.target.files[0]));
+                                             URL.createObjectURL(evt.target.files[0]));
     });
 });
