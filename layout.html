@@ -17,12 +17,13 @@
     <nav class="navbar navbar-default">
       <div class="container">
         <div class="navbar-header">
-          <a class="navbar-brand" href="#"><b>Rink Layout Generator</b> v1.1</a>
+          <a class="navbar-brand" href="#"><b>Rink Layout Generator</b> v1.2</a>
         </div>
         <div class="collapse navbar-collapse" id="navbarCollapsible">
           <ul class="nav navbar-nav navbar-right">
             <li><a id="clearLayout" href="#">Clear Layout</a></li>
             <li><a id="downloadLink" href="#" download="layout.svg">Download Layout (may take a while)</a></li>
+            <li><a id="loadLink" href="#">Load Layout</a></li>
             <li><a>Created by Andrew Smith for the Allen Community Ice Rink</a></li>
           </ul>
         </div>
@@ -30,7 +31,7 @@
     </nav>
     <main>
       <!-- Sorry about this; government agencies use outdated software. -->
-      <div class="col-md-3">
+      <div class="col-md-3" id="rinkLayout">
         <svg id="layout"
            xmlns:dc="http://purl.org/dc/elements/1.1/"
            xmlns:cc="http://creativecommons.org/ns#"

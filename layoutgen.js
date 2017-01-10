@@ -47,6 +47,9 @@ function renderRink() {
       text.setAttribute('class', 'classLabel');
       text.setAttribute('x', ((rinkBounds.x + (rinkBounds.x + rinkBounds.width)) / 2) - (textBox.width / 2));
       text.setAttribute('y', (previousLineY + newLineY) / 2 + (textBox.height / 2));
+      // Data for loading
+      text.setAttribute('data-students', currentClass.students);
+      text.setAttribute('data-factor', currentClass.factor);
       $('svg').append(text);
 
       previousLineY = newLineY;
@@ -114,6 +117,45 @@ $(document).ready(function() {
   $('#downloadLink').click(function() {
       $(this).attr('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent($('.col-md-3').html()));
       $(this).click();
+  });
+
+  // Load a previously saved layout
+  $('#loadLink').click(function() {
+    var loader = $('<input />', {
+      type: 'file'
+    });
+    loader.change(function(evt) {
+      var file = evt.target.files[0];
+      var reader = new FileReader();
+      reader.onload = function(evt) {
+        // Set displayed layout
+        classes = [];
+        var contents = evt.target.result;
+        $('#rinkLayout').html(contents);
+        $('tr').slice(2).remove();
+
+        $('.classLabel').toArray().forEach(function(classSpace) {
+          // Set class data
+          var classData = $(classSpace);
+          classes.push({'name':     classData.html(),
+                        'students': +classData.attr('data-students'),
+                        'factor':   +classData.attr('data-factor')});
+
+          // Set up class input
+          var newRow = $('tbody tr').first().clone();
+          $('.removeClass', newRow).prop('disabled', false);
+          $('.className', newRow).val(classData.html());
+          $('.studentNumber', newRow).val(classData.attr('data-students'));
+          $('.studentFactor', newRow).val(classData.attr('data-factor'));
+          $('tbody').append(newRow);
+        });
+
+        $('tbody tr').first().remove();
+        $('.removeClass', $('tbody tr').first()).prop('disabled', true);
+      };
+      reader.readAsText(file);
+    });
+    loader.click();
   });
 
   // Allow layout clearing
