@@ -31,28 +31,7 @@ function renderRink() {
     if (!isNaN(currentClass.students) && currentClass.factor > 0) {
       // Determine space allotment
       var allotment = currentClass.allotment;
-
-      // Add dividing line, except at end
       var newLineY = previousLineY + (allotment * yPerUnit);
-      if (i != classes.length - 1) {
-        var line = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        line.setAttribute('class', 'classDivider');
-        line.setAttribute('height', 2);
-        line.setAttribute('width', 254);
-        line.setAttribute('x', 73);
-        line.setAttribute('y', newLineY - 1);
-        rinkSVG.append(line);
-
-        // Draw drag handle
-        var drag = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        drag.setAttribute('class', 'dividerDrag');
-        drag.setAttribute('id', 'drag' + i);
-        drag.setAttribute('height', 14);
-        drag.setAttribute('width', 254);
-        drag.setAttribute('x', 73);
-        drag.setAttribute('y', newLineY - 7);
-        rinkSVG.append(drag);
-      }
 
       // Add title
       var text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
@@ -71,6 +50,27 @@ function renderRink() {
       text.setAttribute('data-factor', currentClass.factor);
       text.setAttribute('data-factor-src', currentClass.factorSrc);
       rinkSVG.append(text);
+
+      // Add dividing line, except at end
+      if (i != classes.length - 1) {
+        var line = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        line.setAttribute('class', 'classDivider');
+        line.setAttribute('height', 2);
+        line.setAttribute('width', 254);
+        line.setAttribute('x', 73);
+        line.setAttribute('y', newLineY - 1);
+        rinkSVG.append(line);
+
+        // Draw drag handle
+        var drag = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        drag.setAttribute('class', 'dividerDrag');
+        drag.setAttribute('id', 'drag' + i);
+        drag.setAttribute('height', 24);
+        drag.setAttribute('width', 254);
+        drag.setAttribute('x', 73);
+        drag.setAttribute('y', newLineY - 12);
+        rinkSVG.append(drag);
+      }
 
       previousLineY = newLineY;
     }
