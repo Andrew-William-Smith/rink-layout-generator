@@ -1,17 +1,26 @@
-var classes = [{'name': '', 'students': NaN, 'factor': 1.5}]
+var classes = [{'name': '', 'students': NaN, 'factor': 1.5, 'factorSrc': 'input'}];
+var dragDivides, rinkSVG, scalePoint, startDrag;
+var rink, rinkBounds, yPerUnit;
+
+// Compensate for SVG autoscaling in mouse coordinates
+function svgCoords(evt) {
+  scalePoint.x = evt.clientX;
+  scalePoint.y = evt.clientY;
+  return scalePoint.matrixTransform(rinkSVG[0].getScreenCTM().inverse());
+}
 
 function renderRink() {
   var totalSpaces = 0;
   classes.forEach(function(space) {
-    var allotment = 0;
-    if (!isNaN(space.students)) allotment = space.students * space.factor;
-    if (allotment < 5) allotment = 5;
-    totalSpaces += allotment;
+    if (!isNaN(space.students)) space.allotment = space.students * space.factor;
+    else space.allotment = 0;
+    if (allotment < 5 && space.factorSrc === 'input') space.allotment = 5;
+    totalSpaces += space.allotment;
   });
 
-  var rink = $('#rinkOutline');
-  var rinkBounds = rink[0].getBBox();
-  var yPerUnit = rinkBounds.height / totalSpaces;
+  rink = $('#rinkOutline');
+  rinkBounds = rink[0].getBBox();
+  yPerUnit = rinkBounds.height / totalSpaces;
   var previousLineY = rink[0].getBBox().y;
 
   $('rect').remove();
@@ -21,18 +30,28 @@ function renderRink() {
     var currentClass = classes[i];
     if (!isNaN(currentClass.students) && currentClass.factor > 0) {
       // Determine space allotment
-      var allotment = currentClass.students * currentClass.factor;
-      if (allotment < 5) allotment = 5;
+      var allotment = currentClass.allotment;
 
       // Add dividing line, except at end
       var newLineY = previousLineY + (allotment * yPerUnit);
       if (i != classes.length - 1) {
         var line = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        line.setAttribute('class', 'classDivider');
         line.setAttribute('height', 2);
         line.setAttribute('width', 254);
         line.setAttribute('x', 73);
-        line.setAttribute('y', newLineY);
-        $('svg').append(line);
+        line.setAttribute('y', newLineY - 1);
+        rinkSVG.append(line);
+
+        // Draw drag handle
+        var drag = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        drag.setAttribute('class', 'dividerDrag');
+        drag.setAttribute('id', 'drag' + i);
+        drag.setAttribute('height', 14);
+        drag.setAttribute('width', 254);
+        drag.setAttribute('x', 73);
+        drag.setAttribute('y', newLineY - 7);
+        rinkSVG.append(drag);
       }
 
       // Add title
@@ -40,7 +59,7 @@ function renderRink() {
       text.innerHTML = currentClass.name;
       text.style = 'font-family: sans-serif; font-size: 15px; font-weight: 600';
       // Hack to get text size before display
-      var textTemp = $(text).appendTo($('svg'));
+      var textTemp = $(text).appendTo(rinkSVG);
       var textBox = textTemp[0].getBBox();
       textTemp.remove();
       // Properly center text
@@ -50,7 +69,8 @@ function renderRink() {
       // Data for loading
       text.setAttribute('data-students', currentClass.students);
       text.setAttribute('data-factor', currentClass.factor);
-      $('svg').append(text);
+      text.setAttribute('data-factor-src', currentClass.factorSrc);
+      rinkSVG.append(text);
 
       previousLineY = newLineY;
     }
@@ -63,6 +83,44 @@ $(document).ready(function() {
   $(window).resize(function() {
     $('#layout').attr('height', $(window).height() - 80);
   });
+
+  // Allow dragging of class dividers
+  rinkSVG = $('svg');
+  scalePoint = rinkSVG[0].createSVGPoint();
+
+  rinkSVG
+    .on('mousedown', '.dividerDrag', function(evt) {
+      startDrag = svgCoords(evt).y;
+      dragDivides = +$(this).attr('id').replace('drag', '');
+    })
+    .on('mousemove', '.dividerDrag', function(evt) {
+      if (startDrag != null) {
+        var currentY = svgCoords(evt).y;
+        var yDiff = startDrag - currentY;
+        $(this).attr('y', +$(this).attr('y') - yDiff);
+        startDrag = currentY;
+
+        var class1 = classes[dragDivides];
+        class1.factor -= (yDiff * (1 / yPerUnit)) / class1.students;
+        // Prevent classes from disappearing; reset to usual minimum size
+        if (class1.factor <= 0) class1.factor = 5 / class1.students;
+        class1.factorSrc = 'drag';
+        $('.studentFactor').eq(dragDivides).val(class1.factor.toFixed(2));
+
+        var class2 = classes[dragDivides + 1];
+        class2.factor += (yDiff * (1 / yPerUnit)) / class2.students;
+        if (class2.factor <= 0) class2.factor = 5 / class2.students;
+        class2.factorSrc = 'drag';
+        $('.studentFactor').eq(dragDivides + 1).val(class2.factor.toFixed(2));
+      }
+    })
+    .on('mouseup', '.dividerDrag', function(evt) {
+      startDrag = null;
+      renderRink();
+    })
+    .on('mouseleave', '.dividerDrag', function(evt) {
+      startDrag = null;
+    });
 
   // Prevent deletion of the first class
   $('tbody .removeClass').prop('disabled', true);
@@ -102,14 +160,16 @@ $(document).ready(function() {
 
   $('table').on('click', 'a', function() {
     var parentRow = $(this).closest('tr');
-    classes[parentRow.index()].factor = +$(this).attr('value');
+    classes[parentRow.index()].factor    = +$(this).attr('value');
+    classes[parentRow.index()].factorSrc = 'input';
     $('input', $(this).closest('.input-group')).val($(this).attr('value')).focus();
     renderRink();
   });
 
   $('table').on('input', '.studentFactor', function() {
     var parentRow = $(this).closest('tr');
-    classes[parentRow.index()].factor = +$(this).val();
+    classes[parentRow.index()].factor    = +$(this).val();
+    classes[parentRow.index()].factorSrc = 'input';
     renderRink();
   });
 
@@ -137,9 +197,10 @@ $(document).ready(function() {
         $('.classLabel').toArray().forEach(function(classSpace) {
           // Set class data
           var classData = $(classSpace);
-          classes.push({'name':     classData.html(),
-                        'students': +classData.attr('data-students'),
-                        'factor':   +classData.attr('data-factor')});
+          classes.push({'name':      classData.html(),
+                        'students':  +classData.attr('data-students'),
+                        'factor':    +classData.attr('data-factor'),
+                        'factorSrc': classData.attr('data-factor-src')});
 
           // Set up class input
           var newRow = $('tbody tr').first().clone();
@@ -160,7 +221,7 @@ $(document).ready(function() {
 
   // Allow layout clearing
   $('#clearLayout').click(function() {
-    classes = [{'name': '', 'students': NaN, 'factor': 1.5}];
+    classes = [{'name': '', 'students': NaN, 'factor': 1.5, 'factorSrc': 'input'}];
 
     // Clean first row
     $('tr').slice(2).remove();

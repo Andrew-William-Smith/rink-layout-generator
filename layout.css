@@ -1,3 +1,21 @@
+svg {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
 .studentNumberWrapper {
-    width: 15%;
+    width: 16%;
+}
+
+.dividerDrag {
+    fill: rgba(0, 0, 0, 0.2);
+    transition: fill ease-in-out 0.2s;
+}
+
+.dividerDrag:hover {
+    fill: rgba(255, 0, 0, 0.6);
 }
