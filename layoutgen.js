@@ -18,6 +18,9 @@ function renderRink() {
     totalSpaces += space.allotment;
   });
 
+  rinkSVG = $('svg');
+  scalePoint = rinkSVG[0].createSVGPoint();
+
   rink = $('#rinkOutline');
   rinkBounds = rink[0].getBBox();
   yPerUnit = rinkBounds.height / totalSpaces;
@@ -75,20 +78,9 @@ function renderRink() {
       previousLineY = newLineY;
     }
   }
-}
 
-$(document).ready(function() {
-  // Resize rink illustration to fit window
-  $('#layout').attr('height', $(window).height() - 80);
-  $(window).resize(function() {
-    $('#layout').attr('height', $(window).height() - 80);
-  });
-
-  // Allow dragging of class dividers
-  rinkSVG = $('svg');
-  scalePoint = rinkSVG[0].createSVGPoint();
-
-  rinkSVG
+  // Allow dragging of class dividers: faster than binding to each drag handle
+  rinkSVG.off()
     .on('mousedown', '.dividerDrag', function(evt) {
       startDrag = svgCoords(evt).y;
       dragDivides = +$(this).attr('id').replace('drag', '');
@@ -121,6 +113,14 @@ $(document).ready(function() {
     .on('mouseleave', '.dividerDrag', function(evt) {
       startDrag = null;
     });
+}
+
+$(document).ready(function() {
+  // Resize rink illustration to fit window
+  $('#layout').attr('height', $(window).height() - 80);
+  $(window).resize(function() {
+    $('#layout').attr('height', $(window).height() - 80);
+  });
 
   // Prevent deletion of the first class
   $('tbody .removeClass').prop('disabled', true);
@@ -175,8 +175,10 @@ $(document).ready(function() {
 
   // Offer layout for download
   $('#downloadLink').click(function() {
-      $(this).attr('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent($('.col-md-3').html()));
-      $(this).click();
+    // Remove drag handles
+    var exportSVG = $('.col-md-3').html().replace(/<rect class="dividerDrag" id="drag\d*?" .*?<\/rect>/g, '');
+    $(this).attr('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(exportSVG));
+    $(this).click();
   });
 
   // Load a previously saved layout
@@ -200,7 +202,7 @@ $(document).ready(function() {
           classes.push({'name':      classData.html(),
                         'students':  +classData.attr('data-students'),
                         'factor':    +classData.attr('data-factor'),
-                        'factorSrc': classData.attr('data-factor-src')});
+                        'factorSrc': classData.attr('data-factor-src') == 'undefined' ? 'input' : classData.attr('data-factor-src')});
 
           // Set up class input
           var newRow = $('tbody tr').first().clone();
@@ -213,6 +215,7 @@ $(document).ready(function() {
 
         $('tbody tr').first().remove();
         $('.removeClass', $('tbody tr').first()).prop('disabled', true);
+        renderRink();
       };
       reader.readAsText(file);
     });
