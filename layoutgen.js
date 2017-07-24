@@ -14,7 +14,7 @@ function renderRink() {
   classes.forEach(function(space) {
     if (!isNaN(space.students)) space.allotment = space.students * space.factor;
     else space.allotment = 0;
-    if (allotment < 5 && space.factorSrc === 'input') space.allotment = 5;
+    if (space.allotment < 5 && space.factorSrc === 'input') space.allotment = 5;
     totalSpaces += space.allotment;
   });
 
@@ -136,7 +136,7 @@ $(document).ready(function() {
     $('.studentFactor', newRow).val('1.5');
 
     parentRow.after(newRow);
-    classes.splice(parentRow.index() + 1, 0, {'name': '', 'students': NaN, 'factor': 1.5});
+    classes.splice(parentRow.index() + 1, 0, {'name': '', 'students': NaN, 'factor': 1.5, 'factorSrc': 'input'});
   });
 
   $('table').on('click', '.removeClass', function() {
