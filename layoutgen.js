@@ -9,6 +9,50 @@ function svgCoords(evt) {
   return scalePoint.matrixTransform(rinkSVG[0].getScreenCTM().inverse());
 }
 
+function renderTextNode(classInfo, split, yCoord) {
+  // Basic properties
+  var node = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  switch(split) {
+    case 0:    // No split
+      node.innerHTML = classInfo.name;
+      break;
+    case 1:    // Left sector
+      node.innerHTML = classInfo.name.split('/')[0];
+      break;
+    case 2:    // Right sector
+      node.innerHTML = classInfo.name.split('/')[1];
+      break;
+  }
+  node.style = 'font-family: sans-serif; font-size: 15px; font-weight: 600';
+  // Hack to get node size before display
+  var nodeTemp = $(node).appendTo(rinkSVG);
+  var nodeBox = nodeTemp[0].getBBox();
+  nodeTemp.remove();
+
+  // Properly center node, add split information
+  node.setAttribute('class', 'classLabel');
+  switch(split) {
+    case 0:    // No split
+      node.setAttribute('x', ((rinkBounds.x + (rinkBounds.x + rinkBounds.width)) / 2) - (nodeBox.width / 2));
+      break;
+    case 1:    // Left sector
+      node.setAttribute('x', ((rinkBounds.x + (rinkBounds.x + rinkBounds.width / 2)) / 2) - (nodeBox.width / 2));
+      node.setAttribute('data-split', 'left');
+      break;
+    case 2:    // Right sector
+      node.setAttribute('x', ((rinkBounds.x + (rinkBounds.x + (3/2) * rinkBounds.width)) / 2) - (nodeBox.width / 2));
+      node.setAttribute('data-split', 'right');
+      break;
+  }
+  node.setAttribute('y', (yCoord / 2) + (nodeBox.height / 2));
+
+  // Data for loading
+  node.setAttribute('data-students', classInfo.students);
+  node.setAttribute('data-factor', classInfo.factor);
+  node.setAttribute('data-factor-src', classInfo.factorSrc);
+  rinkSVG.append(node);
+}
+
 function renderRink() {
   var totalSpaces = 0;
   classes.forEach(function(space) {
@@ -36,23 +80,23 @@ function renderRink() {
       var allotment = currentClass.allotment;
       var newLineY = previousLineY + (allotment * yPerUnit);
 
-      // Add title
-      var text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      text.innerHTML = currentClass.name;
-      text.style = 'font-family: sans-serif; font-size: 15px; font-weight: 600';
-      // Hack to get text size before display
-      var textTemp = $(text).appendTo(rinkSVG);
-      var textBox = textTemp[0].getBBox();
-      textTemp.remove();
-      // Properly center text
-      text.setAttribute('class', 'classLabel');
-      text.setAttribute('x', ((rinkBounds.x + (rinkBounds.x + rinkBounds.width)) / 2) - (textBox.width / 2));
-      text.setAttribute('y', (previousLineY + newLineY) / 2 + (textBox.height / 2));
-      // Data for loading
-      text.setAttribute('data-students', currentClass.students);
-      text.setAttribute('data-factor', currentClass.factor);
-      text.setAttribute('data-factor-src', currentClass.factorSrc);
-      rinkSVG.append(text);
+      // Add title: no division
+      if (currentClass.name.indexOf('/') == -1) {
+        renderTextNode(currentClass, 0, (previousLineY + newLineY));
+      }
+      // Add title and split line
+      else {
+        renderTextNode(currentClass, 1, (previousLineY + newLineY));
+        renderTextNode(currentClass, 2, (previousLineY + newLineY));
+
+        var splitLine = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        splitLine.setAttribute('class', 'splitDivider');
+        splitLine.setAttribute('height', newLineY - previousLineY);
+        splitLine.setAttribute('width', 2);
+        splitLine.setAttribute('x', (rinkBounds.x + (rinkBounds.x + rinkBounds.width)) / 2);
+        splitLine.setAttribute('y', previousLineY);
+        rinkSVG.append(splitLine);
+      }
 
       // Add dividing line, except at end
       if (i != classes.length - 1) {
@@ -199,18 +243,25 @@ $(document).ready(function() {
         $('.classLabel').toArray().forEach(function(classSpace) {
           // Set class data
           var classData = $(classSpace);
-          classes.push({'name':      classData.html(),
-                        'students':  +classData.attr('data-students'),
-                        'factor':    +classData.attr('data-factor'),
-                        'factorSrc': classData.attr('data-factor-src') == 'undefined' ? 'input' : classData.attr('data-factor-src')});
+          if (classData.attr('data-split') == 'right') {
+            var combinedName = classes[classes.length - 1].name + '/' + classData.html();
+            classes[classes.length - 1].name = combinedName;
+            $('.className:last').val(combinedName);
+          }
+          else {
+            classes.push({'name':      classData.html(),
+                          'students':  +classData.attr('data-students'),
+                          'factor':    +classData.attr('data-factor'),
+                          'factorSrc': classData.attr('data-factor-src') == 'undefined' ? 'input' : classData.attr('data-factor-src')});
 
-          // Set up class input
-          var newRow = $('tbody tr').first().clone();
-          $('.removeClass', newRow).prop('disabled', false);
-          $('.className', newRow).val(classData.html());
-          $('.studentNumber', newRow).val(classData.attr('data-students'));
-          $('.studentFactor', newRow).val(classData.attr('data-factor'));
-          $('tbody').append(newRow);
+            // Add new input row
+            var newRow = $('tbody tr').first().clone();
+            $('.removeClass', newRow).prop('disabled', false);
+            $('.className', newRow).val(classData.html());
+            $('.studentNumber', newRow).val(classData.attr('data-students'));
+            $('.studentFactor', newRow).val(classData.attr('data-factor'));
+            $('tbody').append(newRow);
+          }
         });
 
         $('tbody tr').first().remove();
