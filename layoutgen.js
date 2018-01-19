@@ -23,6 +23,7 @@ function renderTextNode(classInfo, split, yCoord) {
       node.innerHTML = classInfo.name.split('/')[1];
       break;
   }
+
   node.style = 'font-family: sans-serif; font-size: 15px; font-weight: 600';
   // Hack to get node size before display
   var nodeTemp = $(node).appendTo(rinkSVG);
@@ -259,7 +260,7 @@ $(document).ready(function() {
             $('.removeClass', newRow).prop('disabled', false);
             $('.className', newRow).val(classData.html());
             $('.studentNumber', newRow).val(classData.attr('data-students'));
-            $('.studentFactor', newRow).val(classData.attr('data-factor'));
+            $('.studentFactor', newRow).val(parseFloat(classData.attr('data-factor')).toFixed(2));
             $('tbody').append(newRow);
           }
         });
