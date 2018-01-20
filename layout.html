@@ -8,6 +8,7 @@
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <script src="extern/html.sortable.min.js"></script>
     <script src="layoutgen.js"></script>
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
@@ -15,18 +16,16 @@
   </head>
   <body>
     <nav class="navbar navbar-default">
-      <div class="container">
-        <div class="navbar-header">
-          <a class="navbar-brand" href="#"><b>Rink Layout Generator</b> v1.4.1</a>
-        </div>
-        <div class="collapse navbar-collapse" id="navbarCollapsible">
-          <ul class="nav navbar-nav navbar-right">
-            <li><a id="clearLayout" href="#">Clear Layout</a></li>
-            <li><a id="downloadLink" href="#" download="layout.svg">Download Layout (may take a while)</a></li>
-            <li><a id="loadLink" href="#">Load Layout</a></li>
-            <li><a>Created by Andrew Smith for the Allen Community Ice Rink</a></li>
-          </ul>
-        </div>
+      <div class="navbar-header">
+        <a class="navbar-brand" href="#"><b>Rink Layout Generator</b> v1.4.2</a>
+      </div>
+      <div class="collapse navbar-collapse" id="navbarCollapsible">
+        <ul class="nav navbar-nav navbar-right">
+          <li><a id="clearLayout" href="#">Clear Layout</a></li>
+          <li><a id="downloadLink" href="#" download="layout.svg">Download Layout (may take a while)</a></li>
+          <li><a id="loadLink" href="#">Load Layout</a></li>
+          <li><a href="https://github.com/Andrew-William-Smith/rink-layout-generator">Created by Andrew Smith. View on GitHub (GPLv3).</a></li>
+        </ul>
       </div>
     </nav>
     <main>
@@ -514,10 +513,12 @@
           <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
           <h4><strong>New in Version 1.4</strong></h4>
           <p><strong>Vertical class divisions</strong> To divide a class into two vertical sections, insert a forward slash (/) between the class names.  For example, to split a lane for classes named <i>Tot 1</i> and <i>Tot 2</i> vertically, type <code>Tot 1/Tot 2</code>.</p>
+          <p><strong>Class reordering</strong> To reorder classes, drag the <span class="glyphicon glyphicon-resize-vertical" aria-hidden="true"></span> icon next to the class you want to move.</p>
           <p><strong>Layout loading fix</strong> Corrected a bug which caused too many figures to display for student types upon layout loading.</p>
         </div>
         <table class="table">
           <thead>
+            <th></th>
             <th>Class name</th>
             <th>Students</th>
             <th>Student type</th>
@@ -525,6 +526,7 @@
           </thead>
           <tbody>
             <tr>
+              <td class="dragHandle"><span class="glyphicon glyphicon-resize-vertical dragIcon" aria-hidden="true"></span></td>
               <td><input type="text" class="form-control className"></td>
               <td class="studentNumberWrapper"><input type="text" class="form-control studentNumber"></td>
               <td class="studentNumberWrapper">

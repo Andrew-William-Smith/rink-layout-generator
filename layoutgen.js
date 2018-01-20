@@ -160,6 +160,19 @@ function renderRink() {
     });
 }
 
+function setFirstState() {
+  if (classes.length < 2) $('.removeClass').prop('disabled', true);
+  else $('.removeClass').prop('disabled', false);
+}
+
+function initSortable() {
+  sortable('tbody', {
+    items: 'tr',
+    handle: '.dragHandle',
+    placeholder: '<tr><td colspan="7">&nbsp;</td></tr>'
+  });
+}
+
 $(document).ready(function() {
   // Resize rink illustration to fit window
   $('#layout').attr('height', $(window).height() - 80);
@@ -170,18 +183,31 @@ $(document).ready(function() {
   // Prevent deletion of the first class
   $('tbody .removeClass').prop('disabled', true);
 
+  // Enable sorting
+  sortable('tbody', {
+    items: 'tr',
+    handle: '.dragHandle',
+    placeholder: '<tr><td colspan="7">&nbsp;</td></tr>'
+  })[0].addEventListener('sortupdate', function(evt) {
+    var movedElement = classes[evt.detail.oldElementIndex];
+    classes.splice(evt.detail.oldElementIndex, 1);
+    classes.splice(evt.detail.elementIndex, 0, movedElement);
+    renderRink();
+  });
+
   $('table').on('click', '.addClass', function() {
     var parentRow = $(this).closest('tr');
     var newRow = $('tbody tr').first().clone();
 
     // Clean input for insertion
-    $('.removeClass', newRow).prop('disabled', false);
     $('.className', newRow).val('');
     $('.studentNumber', newRow).val('');
     $('.studentFactor', newRow).val('1.5');
 
     parentRow.after(newRow);
     classes.splice(parentRow.index() + 1, 0, {'name': '', 'students': NaN, 'factor': 1.5, 'factorSrc': 'input'});
+    setFirstState();
+    initSortable();
   });
 
   $('table').on('click', '.removeClass', function() {
@@ -189,6 +215,9 @@ $(document).ready(function() {
     classes.splice(parentRow.index(), 1);
     parentRow.remove();
     renderRink();
+
+    setFirstState();
+    initSortable();
   });
 
   $('table').on('input', '.className', function() {
@@ -257,7 +286,6 @@ $(document).ready(function() {
 
             // Add new input row
             var newRow = $('tbody tr').first().clone();
-            $('.removeClass', newRow).prop('disabled', false);
             $('.className', newRow).val(classData.html());
             $('.studentNumber', newRow).val(classData.attr('data-students'));
             $('.studentFactor', newRow).val(parseFloat(classData.attr('data-factor')).toFixed(2));
@@ -268,6 +296,8 @@ $(document).ready(function() {
         $('tbody tr').first().remove();
         $('.removeClass', $('tbody tr').first()).prop('disabled', true);
         renderRink();
+        setFirstState();
+        initSortable();
       };
       reader.readAsText(file);
     });
@@ -284,5 +314,7 @@ $(document).ready(function() {
     $('.studentNumber').val('');
     $('.studentFactor').val('1.5');
     renderRink();
+    setFirstState();
+    initSortable();
   });
 });

@@ -19,3 +19,11 @@ svg {
 .dividerDrag:hover {
     fill: rgba(255, 0, 0, 0.6);
 }
+
+.dragIcon {
+    padding: 9px 0 0 0;
+}
+
+.dragHandle {
+    width: 0;
+}
