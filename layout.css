@@ -27,3 +27,7 @@ svg {
 .dragHandle {
     width: 0;
 }
+
+#downloadHidden {
+    display: none;
+}

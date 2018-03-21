@@ -249,10 +249,19 @@ $(document).ready(function() {
 
   // Offer layout for download
   $('#downloadLink').click(function() {
+    var hiddenLink = $('#downloadHidden');
     // Remove drag handles
     var exportSVG = $('.col-md-3').html().replace(/<rect class="dividerDrag" id="drag\d*?" .*?<\/rect>/g, '');
-    $(this).attr('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(exportSVG));
-    $(this).click();
+    hiddenLink.attr('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(exportSVG));
+
+    // Get custom filename
+    var fileName = prompt('File name for downloaded layout');
+    if (fileName == null) return;
+    else if (fileName == '') fileName = 'layout.svg';
+    if (!fileName.endsWith('.svg')) fileName += '.svg';
+    hiddenLink.attr('download', fileName);
+
+    hiddenLink[0].click();
   });
 
   // Load a previously saved layout
